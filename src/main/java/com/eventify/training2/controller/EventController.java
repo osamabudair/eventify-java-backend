@@ -1,8 +1,12 @@
 package com.eventify.training2.controller;
 
+import com.eventify.training2.dto.EventRequestDTO;
 import com.eventify.training2.model.Event;
 import com.eventify.training2.sevice.EventService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,30 +23,36 @@ public class EventController {
     this.eventService = eventService;
   }
 
+  // 200 OK
   @GetMapping()
-  public List<Event> getAllEvents(){
-    return eventService.getAllEvents();
+  public ResponseEntity<List<Event>> getAllEvents(){
+    return ResponseEntity.ok(eventService.getAllEvents());
   }
 
+  // 200 OK
   @GetMapping("/{id}")
-  public Event getEventById(@PathVariable Long id){
-    return eventService.getEventById(id);
+  public ResponseEntity<Event> getEventById(@PathVariable Long id){
+    return ResponseEntity.ok(eventService.getEventById(id));
   }
 
-  @PostMapping()
-  public Event createEvent(@RequestBody Event event){
-    return eventService.createEvent(event);
+  // 201 CREATED
+  @PostMapping
+  public ResponseEntity<Event> createEvent(@Valid @RequestBody EventRequestDTO eventDTO) {
+    Event createdEvent = eventService.createEvent(eventDTO);
+    return new ResponseEntity<>(createdEvent, HttpStatus.CREATED);
   }
 
+  // 200 OK
   @PutMapping("/{id}")
-  public Event updateEvent(@PathVariable Long id, @RequestBody Event event){
-    return eventService.updateEvent(id, event);
+  public ResponseEntity<Event> updateEvent(@PathVariable Long id, @RequestBody Event event){
+    return ResponseEntity.ok(eventService.updateEvent(id, event));
   }
 
+  // 204 NO CONTENT
   @DeleteMapping("/{id}")
-  public String deleteEvent(@PathVariable Long id){
+  public ResponseEntity<Void> deleteEvent(@PathVariable Long id){
     eventService.deleteEvent(id);
-    return "Event with id " + id + " has been deleted successfully!";
+    return ResponseEntity.noContent().build();
   }
 
   @GetMapping("/user/{userId}")

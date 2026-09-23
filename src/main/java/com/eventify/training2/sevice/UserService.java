@@ -1,5 +1,7 @@
 package com.eventify.training2.sevice;
 
+import com.eventify.training2.dto.LoginRequestDTO;
+import com.eventify.training2.dto.RegisterRequestDTO;
 import com.eventify.training2.model.User;
 import com.eventify.training2.repo.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,5 +54,41 @@ public class UserService {
       throw new RuntimeException("User not found with id: " + id);
     }
     userRepo.deleteById(id);
+  }
+
+  // Register
+  public User register(RegisterRequestDTO dto) {
+
+    // check password match
+    if (!dto.getPassword().equals(dto.getConfirmPassword())) {
+      throw new IllegalArgumentException("Passwords do not match!");
+    }
+
+    // check email duplicate
+    if (userRepo.existsByEmail(dto.getEmail())) {
+      throw new IllegalArgumentException("Email is already registered!");
+    }
+
+    User user = new User();
+    user.setName(dto.getFullName());
+    user.setEmail(dto.getEmail());
+    user.setPassword(dto.getPassword());
+    user.setRole(dto.getRole());
+
+    return userRepo.save(user);
+  }
+
+  // Login
+  public User login(LoginRequestDTO dto) {
+
+    User user = userRepo.findByEmail(dto.getEmail())
+            .orElseThrow(() -> new RuntimeException("Invalid email or password!"));
+
+    // check password match
+    if (!user.getPassword().equals(dto.getPassword())) {
+      throw new RuntimeException("Invalid email or password!");
+    }
+
+    return user;
   }
 }

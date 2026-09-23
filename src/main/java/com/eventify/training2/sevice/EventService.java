@@ -1,7 +1,10 @@
 package com.eventify.training2.sevice;
 
+import com.eventify.training2.dto.EventRequestDTO;
 import com.eventify.training2.model.Event;
+import com.eventify.training2.model.User;
 import com.eventify.training2.repo.EventRepo;
+import com.eventify.training2.repo.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,9 +15,13 @@ public class EventService {
   @Autowired
   private final EventRepo eventRepo;
 
+  @Autowired
+  private final UserRepo userRepo;
+
   // Constructor
-  public EventService(EventRepo eventRepo) {
+  public EventService(EventRepo eventRepo, UserRepo userRepo) {
     this.eventRepo = eventRepo;
+    this.userRepo = userRepo;
   }
 
   // Get all events
@@ -29,10 +36,16 @@ public class EventService {
   }
 
   // Create an event
-  public Event createEvent(Event event) {
-    if (event.getTitle() == null || event.getTitle().trim().isEmpty()) {
-      throw new IllegalArgumentException("Event title cannot be empty!");
-    }
+  public Event createEvent(EventRequestDTO dto) {
+    User organizer = userRepo.findById(dto.getOrganizerId())
+            .orElseThrow(() -> new RuntimeException("Organizer not found with id: " + dto.getOrganizerId()));
+
+    Event event = new Event();
+    event.setTitle(dto.getTitle());
+    event.setDescription(dto.getDescription());
+    event.setLocation(dto.getLocation());
+    event.setOrganizer(organizer);
+
     return eventRepo.save(event);
   }
 

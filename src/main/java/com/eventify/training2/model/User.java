@@ -17,6 +17,13 @@ public class User {
   @Column(unique = true, nullable = false)
   private String email;
 
+  @Column(nullable = false)
+  private String password;
+
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private Role role;
+
   @OneToMany(mappedBy = "organizer", cascade = CascadeType.ALL, orphanRemoval = true)
   @JsonIgnore
   private List<Event> events = new ArrayList<>();
@@ -24,9 +31,11 @@ public class User {
   // Constructors
   public User(){ }
 
-  public User(String name, String email) {
+  public User(String name, String email, String password, Role role) {
     this.name = name;
     this.email = email;
+    this.password = password;
+    this.role = role;
   }
 
   // Setter and Getter
@@ -52,6 +61,22 @@ public class User {
 
   public void setEmail(String email) {
     this.email = email;
+  }
+
+  public String getPassword() {
+    return password;
+  }
+
+  public void setPassword(String password) {
+    this.password = password;
+  }
+
+  public Role getRole() {
+    return role;
+  }
+
+  public void setRole(Role role) {
+    this.role = role;
   }
 
   public List<Event> getEvents() {
