@@ -1,0 +1,6 @@
+spring.application.name=training2
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/eventify_test
+spring.datasource.username=postgres
+spring.datasource.password=your_password_here
+spring.jpa.hibernate.ddl-auto=update
