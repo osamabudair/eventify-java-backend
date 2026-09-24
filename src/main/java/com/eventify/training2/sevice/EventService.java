@@ -2,6 +2,7 @@ package com.eventify.training2.sevice;
 
 import com.eventify.training2.dto.EventRequestDTO;
 import com.eventify.training2.model.Event;
+import com.eventify.training2.model.Role;
 import com.eventify.training2.model.User;
 import com.eventify.training2.repo.EventRepo;
 import com.eventify.training2.repo.UserRepo;
@@ -40,22 +41,38 @@ public class EventService {
     User organizer = userRepo.findById(dto.getOrganizerId())
             .orElseThrow(() -> new RuntimeException("Organizer not found with id: " + dto.getOrganizerId()));
 
+    if (organizer.getRole() != Role.CLUB_LEADER){
+      throw new RuntimeException("Access denied: Only club leaders can create events!");
+    }
+
     Event event = new Event();
-    event.setTitle(dto.getTitle());
-    event.setDescription(dto.getDescription());
+    event.setName(dto.getName());
+    event.setImageUrl(dto.getImageUrl());
+    event.setDate(dto.getDate());
+    event.setStartTime(dto.getStartTime());
+    event.setEndTime(dto.getEndTime());
     event.setLocation(dto.getLocation());
+    event.setCategory(dto.getCategory());
+    event.setCapacity(dto.getCapacity());
+    event.setDescription(dto.getDescription());
     event.setOrganizer(organizer);
 
     return eventRepo.save(event);
   }
 
   // Update an event
-  public Event updateEvent(Long id, Event newEventData) {
+  public Event updateEvent(Long id, EventRequestDTO dto) {
     Event existingEvent = getEventById(id);
 
-    existingEvent.setTitle(newEventData.getTitle());
-    existingEvent.setDescription(newEventData.getDescription());
-    existingEvent.setLocation(newEventData.getLocation());
+    existingEvent.setName(dto.getName());
+    existingEvent.setImageUrl(dto.getImageUrl());
+    existingEvent.setDate(dto.getDate());
+    existingEvent.setStartTime(dto.getStartTime());
+    existingEvent.setEndTime(dto.getEndTime());
+    existingEvent.setLocation(dto.getLocation());
+    existingEvent.setCategory(dto.getCategory());
+    existingEvent.setCapacity(dto.getCapacity());
+    existingEvent.setDescription(dto.getDescription());
 
     return eventRepo.save(existingEvent);
   }
