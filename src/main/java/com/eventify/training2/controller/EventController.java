@@ -2,7 +2,7 @@ package com.eventify.training2.controller;
 
 import com.eventify.training2.dto.EventRequestDTO;
 import com.eventify.training2.model.Event;
-import com.eventify.training2.sevice.EventService;
+import com.eventify.training2.service.EventService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

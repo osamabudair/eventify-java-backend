@@ -1,4 +1,4 @@
-package com.eventify.training2.sevice;
+package com.eventify.training2.service;
 
 import com.eventify.training2.dto.LoginRequestDTO;
 import com.eventify.training2.dto.RegisterRequestDTO;

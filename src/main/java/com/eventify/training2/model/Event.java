@@ -7,6 +7,8 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "events")
@@ -47,6 +49,10 @@ public class Event {
   @JoinColumn(name = "organizer_id", nullable = false)
   @OnDelete(action = OnDeleteAction.CASCADE)
   private User organizer;
+
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private EventStatus status = EventStatus.ACTIVE;
 
   public Event(){}
 
@@ -137,5 +143,13 @@ public class Event {
 
   public void setCapacity(Integer capacity) {
     this.capacity = capacity;
+  }
+
+  public EventStatus getStatus() {
+    return status;
+  }
+
+  public void setStatus(EventStatus status) {
+    this.status = status;
   }
 }

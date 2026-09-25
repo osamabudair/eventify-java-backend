@@ -1,8 +1,7 @@
 package com.eventify.training2.controller;
 
 import com.eventify.training2.model.User;
-import com.eventify.training2.repo.UserRepo;
-import com.eventify.training2.sevice.UserService;
+import com.eventify.training2.service.UserService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.eventify.training2.sevice;
+package com.eventify.training2.service;
 
 import com.eventify.training2.dto.EventRequestDTO;
 import com.eventify.training2.model.Event;
@@ -94,4 +94,5 @@ public class EventService {
   public List<Event> getEventsByLocation(String location){
     return eventRepo.findByLocationIgnoreCase(location);
   }
+
 }
