@@ -20,6 +20,9 @@ public class User {
   @Column(nullable = false)
   private String password;
 
+  @Column(name = "profile_image_url")
+  private String profileImageUrl;
+
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   private Role role;
@@ -63,9 +66,7 @@ public class User {
     this.email = email;
   }
 
-  public String getPassword() {
-    return password;
-  }
+  public String getPassword() { return password; }
 
   public void setPassword(String password) {
     this.password = password;
@@ -86,4 +87,8 @@ public class User {
   public void setEvents(List<Event> events) {
     this.events = events;
   }
+
+  public String getProfileImageUrl() { return profileImageUrl; }
+
+  public void setProfileImageUrl(String profileImageUrl) { this.profileImageUrl = profileImageUrl; }
 }

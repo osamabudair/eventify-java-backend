@@ -1,13 +1,14 @@
 package com.eventify.training2.service;
 
-import com.eventify.training2.dto.LoginRequestDTO;
-import com.eventify.training2.dto.RegisterRequestDTO;
+import com.eventify.training2.dto.*;
+import com.eventify.training2.model.Role;
 import com.eventify.training2.model.User;
 import com.eventify.training2.repo.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -90,5 +91,69 @@ public class UserService {
     }
 
     return user;
+  }
+
+  public List<ClubDropdownDTO> getAllClubs() {
+    return userRepo.findByRole(Role.CLUB_LEADER)
+            .stream()
+            .map(leader -> new ClubDropdownDTO(leader.getId(), leader.getName()))
+            .collect(Collectors.toList());
+  }
+
+  // get profile data
+  public UserProfileDTO getUserProfile(Long userId) {
+    User user = userRepo.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+
+    return new UserProfileDTO(
+        user.getId(),
+        user.getName(),
+        user.getEmail(),
+        user.getRole(),
+        user.getProfileImageUrl()
+    );
+  }
+
+  // update profile data
+  public UserProfileDTO updateProfile(Long userId, UpdateProfileDTO dto) {
+    User user = userRepo.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+
+    // change name and image
+    user.setName(dto.getName());
+    if (dto.getProfileImageUrl() != null) {
+      user.setProfileImageUrl(dto.getProfileImageUrl());
+    }
+
+    // check if user want to change the password
+    if (dto.getNewPassword() != null && !dto.getNewPassword().isBlank()) {
+      // check put current password
+      if (dto.getCurrentPassword() == null || dto.getCurrentPassword().isBlank()) {
+        throw new RuntimeException("Current password is required to set a new password!");
+      }
+
+      // check correct current password
+      if (!user.getPassword().equals(dto.getCurrentPassword())) {
+        throw new RuntimeException("Current password does not match!");
+      }
+
+      // check compare new password with new confirmed password
+      if (!dto.getNewPassword().equals(dto.getConfirmNewPassword())) {
+        throw new RuntimeException("New passwords do not match!");
+      }
+
+      // save new password
+      user.setPassword(dto.getNewPassword());
+    }
+
+    userRepo.save(user);
+
+    return new UserProfileDTO(
+        user.getId(),
+        user.getName(),
+        user.getEmail(),
+        user.getRole(),
+        user.getProfileImageUrl()
+    );
   }
 }

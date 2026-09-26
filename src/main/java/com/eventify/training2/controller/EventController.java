@@ -1,5 +1,6 @@
 package com.eventify.training2.controller;
 
+import com.eventify.training2.dto.EventCardDTO;
 import com.eventify.training2.dto.EventRequestDTO;
 import com.eventify.training2.model.Event;
 import com.eventify.training2.service.EventService;
@@ -64,5 +65,15 @@ public class EventController {
   @GetMapping("/search")
   public List<Event> searchByLocation(@RequestParam String location) {
     return eventService.getEventsByLocation(location);
+  }
+
+  @GetMapping("/explore")
+  public ResponseEntity<List<EventCardDTO>> exploreEvents(
+          @RequestParam(required = false) String keyword,
+          @RequestParam(required = false) String category,
+          @RequestParam(required = false) Long organizerId) {
+
+    List<EventCardDTO> events = eventService.exploreEvents(keyword, category, organizerId);
+    return ResponseEntity.ok(events);
   }
 }

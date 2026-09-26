@@ -1,7 +1,12 @@
 package com.eventify.training2.controller;
 
+import com.eventify.training2.dto.ClubDropdownDTO;
+import com.eventify.training2.dto.UpdateProfileDTO;
+import com.eventify.training2.dto.UserProfileDTO;
 import com.eventify.training2.model.User;
 import com.eventify.training2.service.UserService;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -40,5 +45,24 @@ public class UserController {
   public String deleteUser(@PathVariable Long id) {
     userService.deleteUser(id);
     return "User with id " + id + " has been deleted successfully!";
+  }
+
+  @GetMapping("/clubs")
+  public ResponseEntity<List<ClubDropdownDTO>> getAllClubs() {
+    return ResponseEntity.ok(userService.getAllClubs());
+  }
+
+  // get user profile
+  @GetMapping("/{userId}/profile")
+  public ResponseEntity<UserProfileDTO> getProfile(@PathVariable Long userId) {
+    return ResponseEntity.ok(userService.getUserProfile(userId));
+  }
+
+  // save change
+  @PutMapping("/{userId}/profile")
+  public ResponseEntity<UserProfileDTO> updateProfile(
+          @PathVariable Long userId,
+          @Valid @RequestBody UpdateProfileDTO dto) {
+    return ResponseEntity.ok(userService.updateProfile(userId, dto));
   }
 }

@@ -1,5 +1,6 @@
 package com.eventify.training2.service;
 
+import com.eventify.training2.dto.EventCardDTO;
 import com.eventify.training2.dto.EventRequestDTO;
 import com.eventify.training2.model.Event;
 import com.eventify.training2.model.Role;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class EventService {
@@ -95,4 +97,17 @@ public class EventService {
     return eventRepo.findByLocationIgnoreCase(location);
   }
 
+  public List<EventCardDTO> exploreEvents(String keyword, String category, Long organizerId) {
+    return eventRepo.exploreEvents(keyword, category, organizerId)
+      .stream()
+      .map(e -> new EventCardDTO(
+          e.getId(),
+          e.getName(),
+          e.getImageUrl(),
+          e.getCategory(),
+          e.getDate(),
+          e.getOrganizer().getName()
+      ))
+      .collect(Collectors.toList());
+  }
 }
