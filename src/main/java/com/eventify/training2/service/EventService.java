@@ -3,6 +3,7 @@ package com.eventify.training2.service;
 import com.eventify.training2.dto.EventCardDTO;
 import com.eventify.training2.dto.EventRequestDTO;
 import com.eventify.training2.model.Event;
+import com.eventify.training2.model.EventStatus;
 import com.eventify.training2.model.Role;
 import com.eventify.training2.model.User;
 import com.eventify.training2.repo.EventRepo;
@@ -99,6 +100,20 @@ public class EventService {
 
   public List<EventCardDTO> exploreEvents(String keyword, String category, Long organizerId) {
     return eventRepo.exploreEvents(keyword, category, organizerId)
+      .stream()
+      .map(e -> new EventCardDTO(
+          e.getId(),
+          e.getName(),
+          e.getImageUrl(),
+          e.getCategory(),
+          e.getDate(),
+          e.getOrganizer().getName()
+      ))
+      .collect(Collectors.toList());
+  }
+
+  public List<EventCardDTO> getUpcomingHighlights() {
+    return eventRepo.findTop3ByStatusOrderByDateAsc(EventStatus.ACTIVE)
       .stream()
       .map(e -> new EventCardDTO(
           e.getId(),

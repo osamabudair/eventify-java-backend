@@ -76,4 +76,9 @@ public class EventController {
     List<EventCardDTO> events = eventService.exploreEvents(keyword, category, organizerId);
     return ResponseEntity.ok(events);
   }
+
+  @GetMapping("/upcoming-highlights")
+  public ResponseEntity<List<EventCardDTO>> getUpcomingHighlights() {
+    return ResponseEntity.ok(eventService.getUpcomingHighlights());
+  }
 }

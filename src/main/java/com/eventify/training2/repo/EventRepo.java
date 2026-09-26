@@ -1,6 +1,7 @@
 package com.eventify.training2.repo;
 
 import com.eventify.training2.model.Event;
+import com.eventify.training2.model.EventStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -25,5 +26,7 @@ public interface EventRepo extends JpaRepository<Event, Long> {
   List<Event> exploreEvents(@Param("keyword") String keyword,
                             @Param("category") String category,
                             @Param("organizerId") Long organizerId);
+
+  List<Event> findTop3ByStatusOrderByDateAsc(EventStatus status);
 
 }
