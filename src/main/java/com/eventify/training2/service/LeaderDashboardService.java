@@ -24,33 +24,33 @@ public class LeaderDashboardService {
   }
 
   public LeaderDashboardDTO getLeaderDashboardData(Long leaderId) {
-
-    // count Total Events Total, Registrations and Pending Requests
     long totalEvents = eventRepo.countByOrganizerId(leaderId);
-    long totalRegistrations = registrationRepo.countByEventOrganizerId(leaderId);
+    long totalRegistrations = registrationRepo.countByEventOrganizerIdAndStatus(leaderId, RegistrationStatus.APPROVED);
     long pendingRequests = registrationRepo.countByEventOrganizerIdAndStatus(leaderId, RegistrationStatus.PENDING);
 
     List<Event> events = eventRepo.findByOrganizerId(leaderId);
     List<LeaderEventDTO> recentEvents = events.stream().map(event -> {
       long approvedCount = registrationRepo.countByEventIdAndStatus(event.getId(), RegistrationStatus.APPROVED);
       return new LeaderEventDTO(
-          event.getId(),
-          event.getName(),
-          event.getDate(),
-          approvedCount,
-          event.getCapacity(),
-          event.getStatus()
+              event.getId(),
+              event.getName(),
+              event.getDate(),
+              event.getStartTime(),
+              event.getEndTime(),
+              approvedCount,
+              event.getCapacity(),
+              event.getStatus()
       );
     }).collect(Collectors.toList());
 
-    // live activity
     List<Registration> recentRegistrations = registrationRepo.findTop5ByEventOrganizerIdOrderByAppliedOnDesc(leaderId);
     List<LiveActivityDTO> liveActivities = recentRegistrations.stream().map(reg ->
-      new LiveActivityDTO(
-          reg.getStudent().getName(),
-          reg.getEvent().getName(),
-          reg.getAppliedOn()
-      )
+            new LiveActivityDTO(
+                    reg.getId(),
+                    reg.getStudent() != null ? reg.getStudent().getName() : "Student",
+                    reg.getEvent() != null ? reg.getEvent().getName() : "Event",
+                    reg.getAppliedOn()
+            )
     ).collect(Collectors.toList());
 
     return new LeaderDashboardDTO(totalEvents, totalRegistrations, pendingRequests, recentEvents, liveActivities);

@@ -13,7 +13,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/registrations")
-@CrossOrigin(origins = "*")
 public class RegistrationController {
   private final RegistrationService registrationService;
 
@@ -54,5 +53,11 @@ public class RegistrationController {
   @GetMapping("/student/{studentId}/dashboard")
   public ResponseEntity<StudentDashboardDTO> getStudentDashboard(@PathVariable Long studentId) {
     return ResponseEntity.ok(registrationService.getStudentDashboardData(studentId));
+  }
+
+  // Get approved attendees for a specific event
+  @GetMapping("/event/{eventId}/approved")
+  public ResponseEntity<List<PendingRegistrationDTO>> getApprovedAttendees(@PathVariable Long eventId) {
+    return ResponseEntity.ok(registrationService.getApprovedAttendeesForEvent(eventId));
   }
 }

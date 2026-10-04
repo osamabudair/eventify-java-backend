@@ -2,12 +2,12 @@ package com.eventify.training2.service;
 
 import com.eventify.training2.dto.EventCardDTO;
 import com.eventify.training2.dto.EventRequestDTO;
-import com.eventify.training2.model.Event;
-import com.eventify.training2.model.EventStatus;
-import com.eventify.training2.model.Role;
-import com.eventify.training2.model.User;
+import com.eventify.training2.dto.LeaderEventDTO;
+import com.eventify.training2.model.*;
 import com.eventify.training2.repo.EventRepo;
+import com.eventify.training2.repo.RegistrationRepo;
 import com.eventify.training2.repo.UserRepo;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,16 +16,15 @@ import java.util.stream.Collectors;
 
 @Service
 public class EventService {
-  @Autowired
   private final EventRepo eventRepo;
-
-  @Autowired
   private final UserRepo userRepo;
+  private final RegistrationRepo registrationRepo;
 
   // Constructor
-  public EventService(EventRepo eventRepo, UserRepo userRepo) {
+  public EventService(EventRepo eventRepo, UserRepo userRepo, RegistrationRepo registrationRepo) {
     this.eventRepo = eventRepo;
     this.userRepo = userRepo;
+    this.registrationRepo = registrationRepo;
   }
 
   // Get all events
@@ -81,16 +80,31 @@ public class EventService {
   }
 
   // Delete an event
+  @Transactional
   public void deleteEvent(Long id) {
     if (!eventRepo.existsById(id)) {
       throw new RuntimeException("Event not found with id: " + id);
     }
+    registrationRepo.deleteByEventId(id);
     eventRepo.deleteById(id);
   }
 
   // Get Events By Organizer
-  public List<Event> getEventsByOrganizer(Long userId){
-    return eventRepo.findByOrganizerId(userId);
+  public List<LeaderEventDTO> getEventsByOrganizer(Long organizerId) {
+    List<Event> events = eventRepo.findByOrganizerId(organizerId);
+    return events.stream().map(event -> {
+      long approvedCount = registrationRepo.countByEventIdAndStatus(event.getId(), RegistrationStatus.APPROVED);
+      return new LeaderEventDTO(
+              event.getId(),
+              event.getName(),
+              event.getDate(),
+              event.getStartTime(),
+              event.getEndTime(),
+              approvedCount,
+              event.getCapacity(),
+              event.getStatus()
+      );
+    }).collect(Collectors.toList());
   }
 
   // Get Events By Organizer

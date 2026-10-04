@@ -4,13 +4,13 @@ import com.eventify.training2.model.RegistrationStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
 public class StudentDashboardDTO {
   private long approvedTicketsCount;
   private long pendingRequestsCount;
-
   private List<TicketDetailDTO> tickets;
 
   public StudentDashboardDTO(long approvedTicketsCount, long pendingRequestsCount, List<TicketDetailDTO> tickets) {
@@ -40,11 +40,16 @@ public class StudentDashboardDTO {
     private LocalTime endTime;
 
     private RegistrationStatus status;
-    private LocalDate appliedOn;
+
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime appliedOn;
+
+    private String organizerName;
 
     public TicketDetailDTO(Long registrationId, Long eventId, String eventName,
                            String location, LocalDate date, LocalTime startTime,
-                           LocalTime endTime, RegistrationStatus status, LocalDate appliedOn) {
+                           LocalTime endTime, RegistrationStatus status, LocalDateTime appliedOn,
+                           String organizerName) {
       this.registrationId = registrationId;
       this.ticketNumber = "#TK" + String.format("%04d", registrationId);
       this.eventId = eventId;
@@ -55,6 +60,7 @@ public class StudentDashboardDTO {
       this.endTime = endTime;
       this.status = status;
       this.appliedOn = appliedOn;
+      this.organizerName = organizerName;
     }
 
     public Long getRegistrationId() { return registrationId; }
@@ -66,6 +72,7 @@ public class StudentDashboardDTO {
     public LocalTime getStartTime() { return startTime; }
     public LocalTime getEndTime() { return endTime; }
     public RegistrationStatus getStatus() { return status; }
-    public LocalDate getAppliedOn() { return appliedOn; }
+    public LocalDateTime getAppliedOn() { return appliedOn; }
+    public String getOrganizerName() { return organizerName; }
   }
 }

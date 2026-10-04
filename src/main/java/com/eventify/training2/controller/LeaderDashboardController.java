@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/leader")
-@CrossOrigin(origins = "*")
 public class LeaderDashboardController {
 
   private final LeaderDashboardService leaderDashboardService;

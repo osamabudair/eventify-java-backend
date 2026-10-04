@@ -3,6 +3,7 @@ package com.eventify.training2.model;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "registrations")
@@ -20,7 +21,7 @@ public class Registration {
   private Event event;
 
   @Column(nullable = false)
-  private LocalDate appliedOn;
+  private LocalDateTime appliedOn = LocalDateTime.now();
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
@@ -32,7 +33,7 @@ public class Registration {
   public Registration(User student, Event event) {
     this.student = student;
     this.event = event;
-    this.appliedOn = LocalDate.now();
+    this.appliedOn = LocalDateTime.now();
     this.status = RegistrationStatus.PENDING;
   }
 
@@ -57,11 +58,11 @@ public class Registration {
     this.event = event;
   }
 
-  public LocalDate getAppliedOn() {
+  public LocalDateTime getAppliedOn() {
     return appliedOn;
   }
 
-  public void setAppliedOn(LocalDate appliedOn) {
+  public void setAppliedOn(LocalDateTime appliedOn) {
     this.appliedOn = appliedOn;
   }
 

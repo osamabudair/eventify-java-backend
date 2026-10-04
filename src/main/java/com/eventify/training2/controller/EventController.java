@@ -2,6 +2,7 @@ package com.eventify.training2.controller;
 
 import com.eventify.training2.dto.EventCardDTO;
 import com.eventify.training2.dto.EventRequestDTO;
+import com.eventify.training2.dto.LeaderEventDTO;
 import com.eventify.training2.model.Event;
 import com.eventify.training2.service.EventService;
 import jakarta.validation.Valid;
@@ -14,10 +15,8 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/events")
-@CrossOrigin(origins = "*")
 public class EventController {
 
-  @Autowired
   private final EventService eventService;
 
   public EventController(EventService eventService){
@@ -57,9 +56,9 @@ public class EventController {
     return ResponseEntity.noContent().build();
   }
 
-  @GetMapping("/user/{userId}")
-  public List<Event> getEventsByUser(@PathVariable Long userId) {
-    return eventService.getEventsByOrganizer(userId);
+  @GetMapping({"/user/{userId}", "/organizer/{userId}"})
+  public ResponseEntity<List<LeaderEventDTO>> getEventsByUser(@PathVariable Long userId) {
+    return ResponseEntity.ok(eventService.getEventsByOrganizer(userId));
   }
 
   @GetMapping("/search")

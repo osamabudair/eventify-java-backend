@@ -20,6 +20,7 @@ public class Event {
   @Column(nullable = false)
   private String name;
 
+  @Column(name = "image_url", columnDefinition = "TEXT")
   private String imageUrl;
 
   @Column(nullable = false)

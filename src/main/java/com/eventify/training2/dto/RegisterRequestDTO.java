@@ -1,12 +1,14 @@
 package com.eventify.training2.dto;
 
 import com.eventify.training2.model.Role;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public class RegisterRequestDTO {
+  @JsonAlias({"username", "name"})
   @NotBlank(message = "Full name is required")
   private String fullName;
 

@@ -58,7 +58,7 @@ public class RegistrationService {
             reg.getId(),
             reg.getStudent().getName(),
             reg.getEvent().getName(),
-            reg.getAppliedOn()
+            reg.getAppliedOn().toLocalDate()
         ))
         .collect(Collectors.toList());
   }
@@ -116,10 +116,23 @@ public class RegistrationService {
           reg.getEvent().getStartTime(),
           reg.getEvent().getEndTime(),
           reg.getStatus(),
-          reg.getAppliedOn()
+          reg.getAppliedOn(),
+          reg.getEvent().getOrganizer() != null ? reg.getEvent().getOrganizer().getName() : "Club Leader"
       ))
       .collect(Collectors.toList());
 
     return new StudentDashboardDTO(approved, pending, tickets);
+  }
+
+  public List<PendingRegistrationDTO> getApprovedAttendeesForEvent(Long eventId) {
+    return registrationRepo.findByEventIdAndStatus(eventId, RegistrationStatus.APPROVED)
+      .stream()
+      .map(reg -> new PendingRegistrationDTO(
+          reg.getId(),
+          reg.getStudent().getName(),
+          reg.getStudent().getEmail(),
+          reg.getAppliedOn().toLocalDate()
+      ))
+      .collect(Collectors.toList());
   }
 }
