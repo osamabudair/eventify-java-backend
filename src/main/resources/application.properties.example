@@ -1,6 +1,10 @@
 spring.application.name=training2
 
-spring.datasource.url=jdbc:postgresql://localhost:5432/eventify_test
-spring.datasource.username=postgres
-spring.datasource.password=your_password_here
+spring.datasource.url=jdbc:postgresql://localhost:5432/your_database_name
+spring.datasource.username=username
+spring.datasource.password=password
 spring.jpa.hibernate.ddl-auto=update
+
+# JWT Configuration
+jwt.secret=your_jwt_secret_key_here
+jwt.expiration=86400000
