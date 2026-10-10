@@ -11,7 +11,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -28,45 +27,45 @@ public class SecurityConfig {
 
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
   private final UserDetailsService userDetailsService;
+  private final PasswordEncoder passwordEncoder;
 
   public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
-                        UserDetailsService userDetailsService) {
+                        UserDetailsService userDetailsService,
+                        PasswordEncoder passwordEncoder) {
     this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     this.userDetailsService = userDetailsService;
-  }
-
-  @Bean
-  public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
+    this.passwordEncoder = passwordEncoder;
   }
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(csrf -> csrf.disable())
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                    .requestMatchers("/api/auth/**").permitAll()
-                    .requestMatchers("/error").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/events/**").permitAll()
-                    .anyRequest().authenticated()
-            )
-            .exceptionHandling(ex -> ex
-                    .authenticationEntryPoint((request, response, authException) -> {
-                      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                      response.setContentType("application/json");
-                      response.getWriter().write("{\"error\": \"Unauthorized\", \"message\": \"" + authException.getMessage() + "\"}");
-                    })
-                    .accessDeniedHandler((request, response, accessDeniedException) -> {
-                      response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                      response.setContentType("application/json");
-                      response.getWriter().write("{\"error\": \"Forbidden\", \"message\": \"" + accessDeniedException.getMessage() + "\"}");
-                    })
-            )
-            .authenticationProvider(authenticationProvider())
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+      .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+      .csrf(csrf -> csrf.disable())
+      .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+      .authorizeHttpRequests(auth -> auth
+              .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+              .requestMatchers("/api/auth/**").permitAll()
+              .requestMatchers("/error").permitAll()
+              .requestMatchers(HttpMethod.GET, "/api/events/**").permitAll()
+              // حماية مسارات الأدمن بدقة سواء كانت بصيغة ADMIN أو ROLE_ADMIN
+              .requestMatchers("/api/admin/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN")
+              .anyRequest().authenticated()
+      )
+      .exceptionHandling(ex -> ex
+              .authenticationEntryPoint((request, response, authException) -> {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"error\": \"Unauthorized\", \"message\": \"" + authException.getMessage() + "\"}");
+              })
+              .accessDeniedHandler((request, response, accessDeniedException) -> {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"error\": \"Forbidden\", \"message\": \"" + accessDeniedException.getMessage() + "\"}");
+              })
+      )
+      .authenticationProvider(authenticationProvider())
+      .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
   }
@@ -75,11 +74,11 @@ public class SecurityConfig {
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
     configuration.setAllowedOriginPatterns(List.of(
-            "http://localhost:5173",
-            "http://localhost:3000",
-            "http://127.0.0.1:5173",
-            "http://127.0.0.1:3000",
-            "http://localhost:[*]"
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:3000",
+        "http://localhost:[*]"
     ));
     configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
     configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "X-Requested-With", "Origin", "*"));
@@ -95,7 +94,7 @@ public class SecurityConfig {
   @Bean
   public DaoAuthenticationProvider authenticationProvider() {
     DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
-    authProvider.setPasswordEncoder(passwordEncoder());
+    authProvider.setPasswordEncoder(passwordEncoder);
     return authProvider;
   }
 

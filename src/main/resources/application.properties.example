@@ -8,3 +8,9 @@ spring.jpa.hibernate.ddl-auto=update
 # JWT Configuration
 jwt.secret=your_jwt_secret_key_here
 jwt.expiration=86400000
+jwt.password.secret=your_password_secret_key_here
+
+# Hardcoded Admin Account Credentials (Configurable by admin)
+admin.email=email
+admin.password=password
+admin.name=System Administrator

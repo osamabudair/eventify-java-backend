@@ -27,6 +27,22 @@ public class User {
   @Column(nullable = false)
   private Role role;
 
+  @Column(name = "approved")
+  private Boolean approved = true;
+
+  @Column(name = "created_at")
+  private java.time.LocalDateTime createdAt;
+
+  @PrePersist
+  protected void onCreate() {
+    if (createdAt == null) {
+      createdAt = java.time.LocalDateTime.now();
+    }
+    if (approved == null) {
+      approved = (role != Role.CLUB_LEADER);
+    }
+  }
+
   @OneToMany(mappedBy = "organizer", cascade = CascadeType.ALL, orphanRemoval = true)
   @JsonIgnore
   private List<Event> events = new ArrayList<>();
@@ -91,4 +107,23 @@ public class User {
   public String getProfileImageUrl() { return profileImageUrl; }
 
   public void setProfileImageUrl(String profileImageUrl) { this.profileImageUrl = profileImageUrl; }
+
+  public Boolean getApproved() {
+    if (approved == null) {
+      return role != Role.CLUB_LEADER;
+    }
+    return approved;
+  }
+
+  public void setApproved(Boolean approved) {
+    this.approved = approved;
+  }
+
+  public java.time.LocalDateTime getCreatedAt() {
+    return createdAt != null ? createdAt : java.time.LocalDateTime.now();
+  }
+
+  public void setCreatedAt(java.time.LocalDateTime createdAt) {
+    this.createdAt = createdAt;
+  }
 }

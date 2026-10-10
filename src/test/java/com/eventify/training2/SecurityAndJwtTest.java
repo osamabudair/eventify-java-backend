@@ -1,6 +1,7 @@
 package com.eventify.training2;
 
 import com.eventify.training2.config.CustomUserDetailsService;
+import com.eventify.training2.config.JwtPasswordEncoder;
 import com.eventify.training2.config.JwtUtils;
 import com.eventify.training2.model.Role;
 import com.eventify.training2.model.User;

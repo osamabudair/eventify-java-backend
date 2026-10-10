@@ -67,6 +67,8 @@ public class UserService {
     user.setEmail(dto.getEmail());
     user.setPassword(passwordEncoder.encode(dto.getPassword()));
     user.setRole(dto.getRole());
+    user.setApproved(dto.getRole() != Role.CLUB_LEADER);
+    user.setCreatedAt(java.time.LocalDateTime.now());
 
     return userRepo.save(user);
   }
@@ -77,6 +79,10 @@ public class UserService {
 
     if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
       throw new RuntimeException("Invalid email or password!");
+    }
+
+    if (user.getRole() == Role.CLUB_LEADER && !Boolean.TRUE.equals(user.getApproved())) {
+      throw new RuntimeException("استنى ليتم القبول ع التسجيل والتحقق منك");
     }
 
     return user;

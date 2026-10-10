@@ -3,6 +3,7 @@ package com.eventify.training2.controller;
 import com.eventify.training2.config.JwtUtils;
 import com.eventify.training2.dto.LoginRequestDTO;
 import com.eventify.training2.dto.RegisterRequestDTO;
+import com.eventify.training2.model.Role;
 import com.eventify.training2.model.User;
 import com.eventify.training2.repo.UserRepo;
 import com.eventify.training2.service.UserService;
@@ -13,6 +14,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -26,30 +28,43 @@ public class AuthController {
   private final JwtUtils jwtUtils;
   private final UserService userService;
   private final UserRepo userRepo;
+  private final PasswordEncoder passwordEncoder;
 
   public AuthController(AuthenticationManager authenticationManager,
                         JwtUtils jwtUtils,
                         UserService userService,
-                        UserRepo userRepo) {
+                        UserRepo userRepo,
+                        PasswordEncoder passwordEncoder) {
     this.authenticationManager = authenticationManager;
     this.jwtUtils = jwtUtils;
     this.userService = userService;
     this.userRepo = userRepo;
+    this.passwordEncoder = passwordEncoder;
   }
 
   @PostMapping("/register")
   public ResponseEntity<?> register(@Valid @RequestBody RegisterRequestDTO dto) {
     User registeredUser = userService.register(dto);
-    String token = jwtUtils.generateToken(registeredUser);
 
     Map<String, Object> response = new HashMap<>();
-    response.put("message", "Account registered successfully!");
-    response.put("token", token);
     response.put("id", registeredUser.getId());
     response.put("name", registeredUser.getName());
     response.put("username", registeredUser.getName());
     response.put("email", registeredUser.getEmail());
     response.put("role", registeredUser.getRole().name());
+
+    // If registered user is a Club Leader, require admin approval
+    if (registeredUser.getRole() == Role.CLUB_LEADER && !Boolean.TRUE.equals(registeredUser.getApproved())) {
+      response.put("pendingApproval", true);
+      response.put("message", "Please wait until you are approved by the admin");
+      response.put("detailedMessage", "Please wait until your registration is approved and verified");
+      return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    String token = jwtUtils.generateToken(registeredUser);
+    response.put("message", "Account registered successfully!");
+    response.put("token", token);
+    response.put("pendingApproval", false);
 
     return new ResponseEntity<>(response, HttpStatus.CREATED);
   }
@@ -57,12 +72,30 @@ public class AuthController {
   @PostMapping("/login")
   public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDTO dto) {
     Authentication authentication = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getPassword())
+        new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getPassword())
     );
-    SecurityContextHolder.getContext().setAuthentication(authentication);
 
     User user = userRepo.findByEmail(dto.getEmail())
-            .orElseThrow(() -> new RuntimeException("User not found with email: " + dto.getEmail()));
+        .orElseThrow(() -> new RuntimeException("User not found with email: " + dto.getEmail()));
+
+    // Check if leader is pending admin approval
+    if (user.getRole() == Role.CLUB_LEADER && !Boolean.TRUE.equals(user.getApproved())) {
+      Map<String, Object> response = new HashMap<>();
+      response.put("error", "PENDING_APPROVAL");
+      response.put("pendingApproval", true);
+      response.put("role", "CLUB_LEADER");
+      response.put("message", "Please wait until your registration is approved and verified");
+      response.put("detailedMessage", "Please wait until you are approved by the admin");
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+    }
+
+    SecurityContextHolder.getContext().setAuthentication(authentication);
+
+    // Auto-upgrade stored password to high-security JWT token if not already in JWT format
+    if (passwordEncoder.upgradeEncoding(user.getPassword())) {
+      user.setPassword(passwordEncoder.encode(dto.getPassword()));
+      userRepo.save(user);
+    }
 
     String token = jwtUtils.generateToken(user);
 
