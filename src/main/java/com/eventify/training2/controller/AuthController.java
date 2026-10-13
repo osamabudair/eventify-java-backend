@@ -71,12 +71,40 @@ public class AuthController {
 
   @PostMapping("/login")
   public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDTO dto) {
-    Authentication authentication = authenticationManager.authenticate(
-        new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getPassword())
-    );
-
     User user = userRepo.findByEmail(dto.getEmail())
-        .orElseThrow(() -> new RuntimeException("User not found with email: " + dto.getEmail()));
+            .orElseThrow(() -> new RuntimeException("Invalid email or password!"));
+
+    // Check if student account is suspended before authentication
+    if (user.getRole() == Role.STUDENT && Boolean.FALSE.equals(user.getApproved())) {
+      if (passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("error", "ACCOUNT_SUSPENDED");
+        response.put("suspended", true);
+        response.put("role", "STUDENT");
+        response.put("message", "Account Currently Suspended");
+        response.put("detailedMessage", "Your account has been suspended by the system administrator.");
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+      }
+    }
+
+    Authentication authentication;
+    try {
+      authentication = authenticationManager.authenticate(
+              new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getPassword())
+      );
+    } catch (org.springframework.security.authentication.DisabledException |
+             org.springframework.security.authentication.LockedException e) {
+      if (user.getRole() == Role.STUDENT && Boolean.FALSE.equals(user.getApproved())) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("error", "ACCOUNT_SUSPENDED");
+        response.put("suspended", true);
+        response.put("role", "STUDENT");
+        response.put("message", "Account Currently Suspended");
+        response.put("detailedMessage", "Your account has been suspended by the system administrator.");
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+      }
+      throw e;
+    }
 
     // Check if leader is pending admin approval
     if (user.getRole() == Role.CLUB_LEADER && !Boolean.TRUE.equals(user.getApproved())) {

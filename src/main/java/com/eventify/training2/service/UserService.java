@@ -81,8 +81,12 @@ public class UserService {
       throw new RuntimeException("Invalid email or password!");
     }
 
+    if (user.getRole() == Role.STUDENT && Boolean.FALSE.equals(user.getApproved())) {
+      throw new RuntimeException("Account currently suspended.");
+    }
+
     if (user.getRole() == Role.CLUB_LEADER && !Boolean.TRUE.equals(user.getApproved())) {
-      throw new RuntimeException("استنى ليتم القبول ع التسجيل والتحقق منك");
+      throw new RuntimeException("Please wait until your registration is approved and verified.");
     }
 
     return user;

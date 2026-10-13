@@ -30,7 +30,7 @@ public class User {
   @Column(name = "approved")
   private Boolean approved = true;
 
-  @Column(name = "created_at")
+  @Column(name = "created_at", updatable = false)
   private java.time.LocalDateTime createdAt;
 
   @PrePersist
@@ -120,7 +120,7 @@ public class User {
   }
 
   public java.time.LocalDateTime getCreatedAt() {
-    return createdAt != null ? createdAt : java.time.LocalDateTime.now();
+    return createdAt;
   }
 
   public void setCreatedAt(java.time.LocalDateTime createdAt) {

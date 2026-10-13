@@ -1,5 +1,6 @@
 package com.eventify.training2.config;
 
+import com.eventify.training2.model.Role;
 import com.eventify.training2.model.User;
 import com.eventify.training2.repo.UserRepo;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -30,9 +31,15 @@ public class CustomUserDetailsService implements UserDetailsService {
             new SimpleGrantedAuthority(roleName)
     );
 
+    boolean isSuspended = (user.getRole() == Role.STUDENT && Boolean.FALSE.equals(user.getApproved()));
+
     return new org.springframework.security.core.userdetails.User(
             user.getEmail(),
             user.getPassword(),
+            !isSuspended,
+            true,
+            true,
+            !isSuspended,
             authorities
     );
   }

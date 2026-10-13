@@ -66,6 +66,24 @@ public class AdminController {
     return ResponseEntity.ok(dtos);
   }
 
+  @GetMapping("/students")
+  public ResponseEntity<List<LeaderApprovalDTO>> getAllStudents() {
+    List<User> students = userRepo.findByRole(Role.STUDENT);
+    List<LeaderApprovalDTO> dtos = students.stream()
+        .map(u -> new LeaderApprovalDTO(
+            u.getId(),
+            u.getName(),
+            u.getEmail(),
+            u.getRole().name(),
+            u.getApproved(),
+            u.getCreatedAt(),
+            u.getProfileImageUrl()
+        ))
+        .collect(Collectors.toList());
+
+    return ResponseEntity.ok(dtos);
+  }
+
   @Transactional
   @PutMapping("/approve-leader/{id}")
   public ResponseEntity<Map<String, Object>> approveLeader(@PathVariable Long id) {
@@ -105,6 +123,40 @@ public class AdminController {
     response.put("message", "Leader and all associated records deleted successfully!");
     response.put("id", id);
     response.put("rejected", true);
+
+    return ResponseEntity.ok(response);
+  }
+
+  @Transactional
+  @PutMapping("/students/{id}/suspend")
+  public ResponseEntity<Map<String, Object>> toggleSuspendStudent(@PathVariable Long id) {
+    User student = userRepo.findById(id)
+        .orElseThrow(() -> new RuntimeException("Student not found with id: " + id));
+
+    boolean currentlyApproved = student.getApproved() != null ? student.getApproved() : true;
+    student.setApproved(!currentlyApproved);
+    userRepo.save(student);
+
+    Map<String, Object> response = new HashMap<>();
+    response.put("message", !currentlyApproved ? "Student account restored successfully!" : "Student account suspended successfully!");
+    response.put("id", id);
+    response.put("approved", student.getApproved());
+
+    return ResponseEntity.ok(response);
+  }
+
+  @Transactional
+  @DeleteMapping("/students/{id}")
+  public ResponseEntity<Map<String, Object>> cancelStudent(@PathVariable Long id) {
+    User student = userRepo.findById(id)
+        .orElseThrow(() -> new RuntimeException("Student not found with id: " + id));
+
+    registrationRepo.deleteByStudentId(student.getId());
+    userRepo.delete(student);
+
+    Map<String, Object> response = new HashMap<>();
+    response.put("message", "Suspicious student account cancelled and removed successfully!");
+    response.put("id", id);
 
     return ResponseEntity.ok(response);
   }

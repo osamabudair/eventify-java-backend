@@ -1,5 +1,6 @@
 package com.eventify.training2.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
 
 public class LeaderApprovalDTO {
@@ -8,6 +9,8 @@ public class LeaderApprovalDTO {
   private String email;
   private String role;
   private Boolean approved;
+
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
   private LocalDateTime createdAt;
   private String profileImageUrl;
 

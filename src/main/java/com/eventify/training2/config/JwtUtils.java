@@ -131,7 +131,7 @@ public class JwtUtils {
   public boolean validateToken(String token, UserDetails userDetails) {
     try {
       final String username = extractUsername(token);
-      return (username != null && username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+      return (username != null && username.equals(userDetails.getUsername()) && !isTokenExpired(token) && userDetails.isEnabled() && userDetails.isAccountNonLocked());
     } catch (JwtException | IllegalArgumentException e) {
       return false;
     }
