@@ -16,6 +16,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * REST controller for administrator operations including approving/rejecting club leaders,
+ * managing student access (suspension/removal), and viewing system-wide metrics.
+ */
 @RestController
 @RequestMapping("/api/admin")
 public class AdminController {
@@ -30,6 +34,9 @@ public class AdminController {
     this.registrationRepo = registrationRepo;
   }
 
+  /**
+   * Retrieve list of club leaders pending administrative approval.
+   */
   @GetMapping("/pending-leaders")
   public ResponseEntity<List<LeaderApprovalDTO>> getPendingLeaders() {
     List<User> pending = userRepo.findPendingLeaders(Role.CLUB_LEADER);
@@ -116,7 +123,7 @@ public class AdminController {
       eventRepo.deleteAll(leaderEvents);
     }
 
-    // 4. حذف الليدر بأمان
+    // Safely delete the club leader user record
     userRepo.delete(user);
 
     Map<String, Object> response = new HashMap<>();

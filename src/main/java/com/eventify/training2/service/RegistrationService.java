@@ -7,12 +7,19 @@ import com.eventify.training2.repo.EventRepo;
 import com.eventify.training2.repo.RegistrationRepo;
 import com.eventify.training2.repo.UserRepo;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Service managing student event registrations, ticket issuance, leader approval flows,
+ * and capacity constraints.
+ */
 @Service
+@Transactional(readOnly = true)
 public class RegistrationService {
+
   private final RegistrationRepo registrationRepo;
   private final EventRepo eventRepo;
   private final UserRepo userRepo;
@@ -23,7 +30,15 @@ public class RegistrationService {
     this.userRepo = userRepo;
   }
 
-  // request to register in event
+  /**
+   * Submit a student registration application for an event.
+   * Enforces capacity limits and prevents duplicate applications.
+   *
+   * @param eventId Target event ID
+   * @param studentId Applying student ID
+   * @return Success message string
+   */
+  @Transactional
   public String applyForEvent(Long eventId, Long studentId) {
     User student = userRepo.findById(studentId)
             .orElseThrow(() -> new RuntimeException("Student not found"));
@@ -50,20 +65,32 @@ public class RegistrationService {
     return "Application submitted successfully and is pending approval!";
   }
 
-  // pending request
+  /**
+   * Retrieve all pending registration applications for a club leader's events.
+   *
+   * @param leaderId Club leader ID
+   * @return List of pending registration DTOs
+   */
   public List<PendingRegistrationDTO> getPendingRegistrationsForLeader(Long leaderId) {
     return registrationRepo.findByEventOrganizerIdAndStatus(leaderId, RegistrationStatus.PENDING)
         .stream()
         .map(reg -> new PendingRegistrationDTO(
             reg.getId(),
-            reg.getStudent().getName(),
-            reg.getEvent().getName(),
-            reg.getAppliedOn().toLocalDate()
+            reg.getStudent() != null ? reg.getStudent().getName() : "Student",
+            reg.getStudent() != null ? reg.getStudent().getEmail() : "",
+            reg.getEvent() != null ? reg.getEvent().getName() : "Event",
+            reg.getAppliedOn() != null ? reg.getAppliedOn().toLocalDate() : java.time.LocalDate.now()
         ))
         .collect(Collectors.toList());
   }
 
-  // approved request
+  /**
+   * Approve a pending student registration, enforcing remaining event capacity.
+   *
+   * @param registrationId Target registration ID
+   * @return Confirmation message
+   */
+  @Transactional
   public String approveRegistration(Long registrationId) {
     Registration reg = registrationRepo.findById(registrationId)
             .orElseThrow(() -> new RuntimeException("Registration not found with id: " + registrationId));
@@ -82,7 +109,13 @@ public class RegistrationService {
     return "Registration approved successfully!";
   }
 
-  // rejected request
+  /**
+   * Reject a student registration application.
+   *
+   * @param registrationId Target registration ID
+   * @return Rejection confirmation message
+   */
+  @Transactional
   public String rejectRegistration(Long registrationId) {
     Registration reg = registrationRepo.findById(registrationId)
             .orElseThrow(() -> new RuntimeException("Registration not found"));
@@ -91,6 +124,13 @@ public class RegistrationService {
     return "Registration rejected successfully!";
   }
 
+  /**
+   * Cancel an active or pending registration.
+   *
+   * @param registrationId Target registration ID
+   * @return Cancellation confirmation message
+   */
+  @Transactional
   public String cancelRegistration(Long registrationId) {
     Registration reg = registrationRepo.findById(registrationId)
             .orElseThrow(() -> new RuntimeException("Registration not found"));
@@ -100,6 +140,12 @@ public class RegistrationService {
     return "Registration has been cancelled successfully.";
   }
 
+  /**
+   * Retrieve overview metrics and tickets for a student portal.
+   *
+   * @param studentId Student user ID
+   * @return Aggregated student dashboard DTO
+   */
   public StudentDashboardDTO getStudentDashboardData(Long studentId) {
     long approved = registrationRepo.countByStudentIdAndStatus(studentId, RegistrationStatus.APPROVED);
     long pending = registrationRepo.countByStudentIdAndStatus(studentId, RegistrationStatus.PENDING);
@@ -124,14 +170,21 @@ public class RegistrationService {
     return new StudentDashboardDTO(approved, pending, tickets);
   }
 
+  /**
+   * Retrieve list of approved attendees for a specific event.
+   *
+   * @param eventId Target event ID
+   * @return List of approved attendee records
+   */
   public List<PendingRegistrationDTO> getApprovedAttendeesForEvent(Long eventId) {
     return registrationRepo.findByEventIdAndStatus(eventId, RegistrationStatus.APPROVED)
       .stream()
       .map(reg -> new PendingRegistrationDTO(
           reg.getId(),
-          reg.getStudent().getName(),
-          reg.getStudent().getEmail(),
-          reg.getAppliedOn().toLocalDate()
+          reg.getStudent() != null ? reg.getStudent().getName() : "Student",
+          reg.getStudent() != null ? reg.getStudent().getEmail() : "",
+          reg.getEvent() != null ? reg.getEvent().getName() : "",
+          reg.getAppliedOn() != null ? reg.getAppliedOn().toLocalDate() : java.time.LocalDate.now()
       ))
       .collect(Collectors.toList());
   }

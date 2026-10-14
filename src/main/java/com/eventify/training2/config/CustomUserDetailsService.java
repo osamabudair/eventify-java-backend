@@ -11,6 +11,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/**
+ * Custom Spring Security UserDetailsService loading user credentials by case-insensitive email.
+ */
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
@@ -22,7 +25,9 @@ public class CustomUserDetailsService implements UserDetailsService {
 
   @Override
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-    User user = userRepo.findByEmail(username)
+    final String normalizedEmail = username != null ? username.trim().toLowerCase() : "";
+
+    User user = userRepo.findByEmailIgnoreCase(normalizedEmail)
             .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + username));
 
     String roleName = user.getRole() != null ? user.getRole().name() : "STUDENT";

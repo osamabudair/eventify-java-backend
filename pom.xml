@@ -9,9 +9,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.eventify</groupId>
-    <artifactId>training2</artifactId>
+    <artifactId>eventify-java-backend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>training2</name>
+    <name>eventify-java-backend</name>
     <description>training2</description>
     <url/>
     <licenses>

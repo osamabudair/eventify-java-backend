@@ -42,8 +42,19 @@ public class AuthController {
     this.passwordEncoder = passwordEncoder;
   }
 
+  /**
+   * Register a new student or club leader account.
+   * Normalizes incoming email string to lowercase before delegating to UserService.
+   *
+   * @param dto Registration payload
+   * @return Registered user details with JWT token or pending approval status
+   */
   @PostMapping("/register")
   public ResponseEntity<?> register(@Valid @RequestBody RegisterRequestDTO dto) {
+    if (dto.getEmail() != null) {
+      dto.setEmail(dto.getEmail().trim().toLowerCase());
+    }
+
     User registeredUser = userService.register(dto);
 
     Map<String, Object> response = new HashMap<>();
@@ -69,9 +80,17 @@ public class AuthController {
     return new ResponseEntity<>(response, HttpStatus.CREATED);
   }
 
+  /**
+   * Authenticate user credentials with case-insensitive email lookup.
+   *
+   * @param dto Login credentials
+   * @return Authenticated user profile and signed JWT token
+   */
   @PostMapping("/login")
   public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDTO dto) {
-    User user = userRepo.findByEmail(dto.getEmail())
+    final String normalizedEmail = dto.getEmail() != null ? dto.getEmail().trim().toLowerCase() : "";
+
+    User user = userRepo.findByEmailIgnoreCase(normalizedEmail)
             .orElseThrow(() -> new RuntimeException("Invalid email or password!"));
 
     // Check if student account is suspended before authentication
@@ -90,7 +109,7 @@ public class AuthController {
     Authentication authentication;
     try {
       authentication = authenticationManager.authenticate(
-              new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getPassword())
+              new UsernamePasswordAuthenticationToken(normalizedEmail, dto.getPassword())
       );
     } catch (org.springframework.security.authentication.DisabledException |
              org.springframework.security.authentication.LockedException e) {

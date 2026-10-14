@@ -4,13 +4,13 @@ import com.eventify.training2.dto.PendingRegistrationDTO;
 import com.eventify.training2.dto.StudentDashboardDTO;
 import com.eventify.training2.service.RegistrationService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/**
+ * REST controller for managing event applications, approvals, cancellations, and ticket registries.
+ */
 @RestController
 @RequestMapping("/api/registrations")
 public class RegistrationController {
@@ -20,42 +20,57 @@ public class RegistrationController {
     this.registrationService = registrationService;
   }
 
-  // Request student to event
+  /**
+   * Submit student application for an event.
+   */
   @PostMapping("/apply/{eventId}/student/{studentId}")
   public ResponseEntity<String> applyForEvent(@PathVariable Long eventId, @PathVariable Long studentId) {
     return ResponseEntity.ok(registrationService.applyForEvent(eventId, studentId));
   }
 
-  // Pending request
+  /**
+   * Retrieve all pending registrations for a club leader's events.
+   */
   @GetMapping("/leader/{leaderId}/pending")
   public ResponseEntity<List<PendingRegistrationDTO>> getPendingRegistrations(@PathVariable Long leaderId) {
     return ResponseEntity.ok(registrationService.getPendingRegistrationsForLeader(leaderId));
   }
 
-  // approve request
+  /**
+   * Approve a pending student registration.
+   */
   @PutMapping("/{registrationId}/approve")
   public ResponseEntity<String> approveRegistration(@PathVariable Long registrationId) {
     return ResponseEntity.ok(registrationService.approveRegistration(registrationId));
   }
 
-  // reject request
+  /**
+   * Reject a pending student registration.
+   */
   @PutMapping("/{registrationId}/reject")
   public ResponseEntity<String> rejectRegistration(@PathVariable Long registrationId) {
     return ResponseEntity.ok(registrationService.rejectRegistration(registrationId));
   }
 
-  // reject student (remove)
+  /**
+   * Cancel an existing student registration.
+   */
   @PutMapping("/{registrationId}/cancel")
   public ResponseEntity<String> cancelRegistration(@PathVariable Long registrationId) {
     return ResponseEntity.ok(registrationService.cancelRegistration(registrationId));
   }
 
+  /**
+   * Retrieve tickets and statistics for a student's dashboard.
+   */
   @GetMapping("/student/{studentId}/dashboard")
   public ResponseEntity<StudentDashboardDTO> getStudentDashboard(@PathVariable Long studentId) {
     return ResponseEntity.ok(registrationService.getStudentDashboardData(studentId));
   }
 
-  // Get approved attendees for a specific event
+  /**
+   * Retrieve approved attendees for a specific event.
+   */
   @GetMapping("/event/{eventId}/approved")
   public ResponseEntity<List<PendingRegistrationDTO>> getApprovedAttendees(@PathVariable Long eventId) {
     return ResponseEntity.ok(registrationService.getApprovedAttendeesForEvent(eventId));

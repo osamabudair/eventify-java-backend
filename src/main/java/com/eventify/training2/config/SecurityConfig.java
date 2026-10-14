@@ -48,7 +48,7 @@ public class SecurityConfig {
               .requestMatchers("/api/auth/**").permitAll()
               .requestMatchers("/error").permitAll()
               .requestMatchers(HttpMethod.GET, "/api/events/**").permitAll()
-              // حماية مسارات الأدمن بدقة سواء كانت بصيغة ADMIN أو ROLE_ADMIN
+              // Secure administrator endpoints strictly requiring ADMIN or ROLE_ADMIN authorities
               .requestMatchers("/api/admin/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN")
               .anyRequest().authenticated()
       )

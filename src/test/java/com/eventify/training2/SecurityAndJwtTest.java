@@ -117,9 +117,9 @@ class SecurityAndJwtTest {
   void testAuthJwtWithUserDetails() {
     String jwtEncodedPassword = jwtPasswordEncoder.encode("leaderPass");
     User user = new User("Bob Leader", "bob@example.com", jwtEncodedPassword, Role.CLUB_LEADER);
-    when(userRepo.findByEmail("bob@example.com")).thenReturn(Optional.of(user));
+    when(userRepo.findByEmailIgnoreCase("bob@example.com")).thenReturn(Optional.of(user));
 
-    UserDetails userDetails = userDetailsService.loadUserByUsername("bob@example.com");
+    UserDetails userDetails = userDetailsService.loadUserByUsername("BoB@ExAmPlE.CoM");
     assertNotNull(userDetails);
     assertEquals("bob@example.com", userDetails.getUsername());
     assertTrue(userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_CLUB_LEADER")));
@@ -130,7 +130,7 @@ class SecurityAndJwtTest {
 
   @Test
   void testUserNotFoundThrowsException() {
-    when(userRepo.findByEmail("unknown@example.com")).thenReturn(Optional.empty());
+    when(userRepo.findByEmailIgnoreCase("unknown@example.com")).thenReturn(Optional.empty());
 
     assertThrows(UsernameNotFoundException.class, () -> {
       userDetailsService.loadUserByUsername("unknown@example.com");

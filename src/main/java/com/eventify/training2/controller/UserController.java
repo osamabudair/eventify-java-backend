@@ -11,53 +11,78 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * REST controller managing user records, club dropdown lists, and user profile management.
+ */
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
   private final UserService userService;
 
-  public UserController(UserService userService){
+  public UserController(UserService userService) {
     this.userService = userService;
   }
 
-  @GetMapping()
-  public List<User> getAllUsers(){
+  /**
+   * Retrieve all registered users.
+   */
+  @GetMapping
+  public List<User> getAllUsers() {
     return userService.getAllUsers();
   }
 
+  /**
+   * Retrieve a single user by ID.
+   */
   @GetMapping("/{id}")
-  public User getUserById(@PathVariable Long id){
+  public User getUserById(@PathVariable Long id) {
     return userService.getUserById(id);
   }
 
-  @PostMapping()
-  public User createUser(@RequestBody User user){
+  /**
+   * Create a new user record.
+   */
+  @PostMapping
+  public User createUser(@RequestBody User user) {
     return userService.createUser(user);
   }
 
+  /**
+   * Update an existing user's data.
+   */
   @PutMapping("/{id}")
   public User updateUser(@PathVariable Long id, @RequestBody User user) {
     return userService.updateUser(id, user);
   }
 
+  /**
+   * Delete a user record by ID.
+   */
   @DeleteMapping("/{id}")
   public String deleteUser(@PathVariable Long id) {
     userService.deleteUser(id);
     return "User with id " + id + " has been deleted successfully!";
   }
 
+  /**
+   * Retrieve list of active club leaders for selection dropdowns.
+   */
   @GetMapping("/clubs")
   public ResponseEntity<List<ClubDropdownDTO>> getAllClubs() {
     return ResponseEntity.ok(userService.getAllClubs());
   }
 
-  // get user profile
+  /**
+   * Retrieve profile details for the specified user ID.
+   */
   @GetMapping("/{userId}/profile")
   public ResponseEntity<UserProfileDTO> getProfile(@PathVariable Long userId) {
     return ResponseEntity.ok(userService.getUserProfile(userId));
   }
 
-  // save change
+  /**
+   * Update profile details and password for the specified user ID.
+   */
   @PutMapping("/{userId}/profile")
   public ResponseEntity<UserProfileDTO> updateProfile(
           @PathVariable Long userId,

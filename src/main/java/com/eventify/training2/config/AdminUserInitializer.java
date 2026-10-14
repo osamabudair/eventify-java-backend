@@ -43,9 +43,16 @@ public class AdminUserInitializer implements CommandLineRunner {
   @Override
   public void run(String... args) {
     try {
-      userRepo.findByEmail(adminEmail).ifPresentOrElse(
+      final String normalizedEmail = adminEmail != null ? adminEmail.trim().toLowerCase() : "admin@eventify.com";
+
+      userRepo.findByEmailIgnoreCase(normalizedEmail).ifPresentOrElse(
           existingUser -> {
             boolean updated = false;
+            // Ensure email is saved in normalized format
+            if (!normalizedEmail.equals(existingUser.getEmail())) {
+              existingUser.setEmail(normalizedEmail);
+              updated = true;
+            }
             if (existingUser.getRole() != Role.ADMIN) {
               existingUser.setRole(Role.ADMIN);
               updated = true;
@@ -60,19 +67,19 @@ public class AdminUserInitializer implements CommandLineRunner {
             }
             if (updated) {
               userRepo.save(existingUser);
-              log.info("Admin user verified and updated with credentials from config: {}", adminEmail);
+              log.info("Admin user verified and updated with credentials from config: {}", normalizedEmail);
             }
           },
           () -> {
             User admin = new User();
-            admin.setName(adminName);
-            admin.setEmail(adminEmail);
+            admin.setName(adminName != null ? adminName.trim() : "System Administrator");
+            admin.setEmail(normalizedEmail);
             admin.setPassword(passwordEncoder.encode(adminPassword));
             admin.setRole(Role.ADMIN);
             admin.setApproved(true);
             admin.setCreatedAt(LocalDateTime.now());
             userRepo.save(admin);
-            log.info("Admin user initialized successfully: {}", adminEmail);
+            log.info("Admin user initialized successfully: {}", normalizedEmail);
           }
       );
     } catch (Exception e) {

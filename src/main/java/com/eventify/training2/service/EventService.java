@@ -7,43 +7,52 @@ import com.eventify.training2.model.*;
 import com.eventify.training2.repo.EventRepo;
 import com.eventify.training2.repo.RegistrationRepo;
 import com.eventify.training2.repo.UserRepo;
-import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Service managing campus event creation, discovery, updates, deletion, and attendee tracking.
+ */
 @Service
+@Transactional(readOnly = true)
 public class EventService {
   private final EventRepo eventRepo;
   private final UserRepo userRepo;
   private final RegistrationRepo registrationRepo;
 
-  // Constructor
   public EventService(EventRepo eventRepo, UserRepo userRepo, RegistrationRepo registrationRepo) {
     this.eventRepo = eventRepo;
     this.userRepo = userRepo;
     this.registrationRepo = registrationRepo;
   }
 
-  // Get all events
+  /**
+   * Retrieve all events stored in the system.
+   */
   public List<Event> getAllEvents() {
     return eventRepo.findAll();
   }
 
-  // Get an event by id
+  /**
+   * Look up a single event by primary key ID.
+   */
   public Event getEventById(Long id) {
     return eventRepo.findById(id)
             .orElseThrow(() -> new RuntimeException("Event not found with id: " + id));
   }
 
-  // Create an event
+  /**
+   * Create and publish a new event by an authorized club leader.
+   */
+  @Transactional
   public Event createEvent(EventRequestDTO dto) {
     User organizer = userRepo.findById(dto.getOrganizerId())
             .orElseThrow(() -> new RuntimeException("Organizer not found with id: " + dto.getOrganizerId()));
 
-    if (organizer.getRole() != Role.CLUB_LEADER){
+    if (organizer.getRole() != Role.CLUB_LEADER) {
       throw new RuntimeException("Access denied: Only club leaders can create events!");
     }
 
@@ -62,7 +71,10 @@ public class EventService {
     return eventRepo.save(event);
   }
 
-  // Update an event
+  /**
+   * Update existing event metadata.
+   */
+  @Transactional
   public Event updateEvent(Long id, EventRequestDTO dto) {
     Event existingEvent = getEventById(id);
 
@@ -79,7 +91,9 @@ public class EventService {
     return eventRepo.save(existingEvent);
   }
 
-  // Delete an event
+  /**
+   * Remove an event and cascade deletion to associated registration requests.
+   */
   @Transactional
   public void deleteEvent(Long id) {
     if (!eventRepo.existsById(id)) {
@@ -89,7 +103,9 @@ public class EventService {
     eventRepo.deleteById(id);
   }
 
-  // Get Events By Organizer
+  /**
+   * Retrieve all events created by a specific club leader organizer.
+   */
   public List<LeaderEventDTO> getEventsByOrganizer(Long organizerId) {
     List<Event> events = eventRepo.findByOrganizerId(organizerId);
     return events.stream().map(event -> {
@@ -107,11 +123,17 @@ public class EventService {
     }).collect(Collectors.toList());
   }
 
-  // Get Events By Organizer
-  public List<Event> getEventsByLocation(String location){
+  /**
+   * Search events filtered by location.
+   */
+  public List<Event> getEventsByLocation(String location) {
     return eventRepo.findByLocationIgnoreCase(location);
   }
 
+  /**
+   * Query events for the public Explore Events catalog with optional filters.
+   * Includes startTime and endTime directly to prevent frontend N+1 queries.
+   */
   public List<EventCardDTO> exploreEvents(String keyword, String category, Long organizerId) {
     return eventRepo.exploreEvents(keyword, category, organizerId)
       .stream()
@@ -121,11 +143,16 @@ public class EventService {
           e.getImageUrl(),
           e.getCategory(),
           e.getDate(),
-          e.getOrganizer().getName()
+          e.getOrganizer().getName(),
+          e.getStartTime(),
+          e.getEndTime()
       ))
       .collect(Collectors.toList());
   }
 
+  /**
+   * Query top upcoming active events for the home feed highlights.
+   */
   public List<EventCardDTO> getUpcomingHighlights() {
     return eventRepo.findTop3ByStatusOrderByDateAsc(EventStatus.ACTIVE)
       .stream()
@@ -135,7 +162,9 @@ public class EventService {
           e.getImageUrl(),
           e.getCategory(),
           e.getDate(),
-          e.getOrganizer().getName()
+          e.getOrganizer().getName(),
+          e.getStartTime(),
+          e.getEndTime()
       ))
       .collect(Collectors.toList());
   }

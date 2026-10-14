@@ -9,11 +9,16 @@ import com.eventify.training2.model.RegistrationStatus;
 import com.eventify.training2.repo.EventRepo;
 import com.eventify.training2.repo.RegistrationRepo;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Service aggregating metrics, active events, and recent registration activity for club leader dashboards.
+ */
 @Service
+@Transactional(readOnly = true)
 public class LeaderDashboardService {
   private final EventRepo eventRepo;
   private final RegistrationRepo registrationRepo;
@@ -23,6 +28,12 @@ public class LeaderDashboardService {
     this.registrationRepo = registrationRepo;
   }
 
+  /**
+   * Aggregate high-level statistics and lists for the leader overview panel.
+   *
+   * @param leaderId Club leader ID
+   * @return LeaderDashboardDTO containing statistics, recent events, and live registration activity
+   */
   public LeaderDashboardDTO getLeaderDashboardData(Long leaderId) {
     long totalEvents = eventRepo.countByOrganizerId(leaderId);
     long totalRegistrations = registrationRepo.countByEventOrganizerIdAndStatus(leaderId, RegistrationStatus.APPROVED);
