@@ -26,10 +26,10 @@ public class AdminUserInitializer implements CommandLineRunner {
   private final UserRepo userRepo;
   private final PasswordEncoder passwordEncoder;
 
-  @Value("${admin.email:admin@eventify.com}")
+  @Value("${admin.email}")
   private String adminEmail;
 
-  @Value("${admin.password:admin123456}")
+  @Value("${admin.password}")
   private String adminPassword;
 
   @Value("${admin.name:System Administrator}")
