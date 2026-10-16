@@ -1,6 +1,7 @@
 package com.eventify.training2.controller;
 
 import com.eventify.training2.dto.EventCardDTO;
+import com.eventify.training2.dto.EventDetailsDTO;
 import com.eventify.training2.dto.EventRequestDTO;
 import com.eventify.training2.dto.LeaderEventDTO;
 import com.eventify.training2.model.Event;
@@ -37,8 +38,8 @@ public class EventController {
    * Retrieve detailed information for a specific event by ID.
    */
   @GetMapping("/{id}")
-  public ResponseEntity<Event> getEventById(@PathVariable Long id) {
-    return ResponseEntity.ok(eventService.getEventById(id));
+  public ResponseEntity<EventDetailsDTO> getEventById(@PathVariable Long id) {
+    return ResponseEntity.ok(eventService.getEventDetails(id));
   }
 
   /**

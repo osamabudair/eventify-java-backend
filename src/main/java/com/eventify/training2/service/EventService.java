@@ -1,6 +1,7 @@
 package com.eventify.training2.service;
 
 import com.eventify.training2.dto.EventCardDTO;
+import com.eventify.training2.dto.EventDetailsDTO;
 import com.eventify.training2.dto.EventRequestDTO;
 import com.eventify.training2.dto.LeaderEventDTO;
 import com.eventify.training2.model.*;
@@ -42,6 +43,28 @@ public class EventService {
   public Event getEventById(Long id) {
     return eventRepo.findById(id)
             .orElseThrow(() -> new RuntimeException("Event not found with id: " + id));
+  }
+
+  public EventDetailsDTO getEventDetails(Long id) {
+    Event event = getEventById(id);
+    long approvedCount = registrationRepo.countByEventIdAndStatus(id, RegistrationStatus.APPROVED);
+    return new EventDetailsDTO(
+      event.getId(),
+      event.getName(),
+      event.getImageUrl(),
+      event.getDate(),
+      event.getStartTime(),
+      event.getEndTime(),
+      event.getLocation(),
+      event.getCategory(),
+      event.getCapacity(),
+      event.getDescription(),
+      event.getOrganizer(),
+      event.getOrganizer() != null ? event.getOrganizer().getName() : null,
+      event.getStatus(),
+      approvedCount,
+      approvedCount
+    );
   }
 
   /**

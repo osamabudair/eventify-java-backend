@@ -188,4 +188,8 @@ public class RegistrationService {
       ))
       .collect(Collectors.toList());
   }
+
+  public long getApprovedAttendeeCount(Long eventId) {
+    return registrationRepo.countByEventIdAndStatus(eventId, RegistrationStatus.APPROVED);
+  }
 }

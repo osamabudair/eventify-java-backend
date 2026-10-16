@@ -75,4 +75,9 @@ public class RegistrationController {
   public ResponseEntity<List<PendingRegistrationDTO>> getApprovedAttendees(@PathVariable Long eventId) {
     return ResponseEntity.ok(registrationService.getApprovedAttendeesForEvent(eventId));
   }
+
+  @GetMapping("/event/{eventId}/count")
+  public ResponseEntity<Long> getApprovedAttendeeCount(@PathVariable Long eventId) {
+    return ResponseEntity.ok(registrationService.getApprovedAttendeeCount(eventId));
+  }
 }

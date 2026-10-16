@@ -48,7 +48,7 @@ public class SecurityConfig {
               .requestMatchers("/api/auth/**").permitAll()
               .requestMatchers("/error").permitAll()
               .requestMatchers(HttpMethod.GET, "/api/events/**").permitAll()
-              // Secure administrator endpoints strictly requiring ADMIN or ROLE_ADMIN authorities
+              .requestMatchers(HttpMethod.GET, "/api/registrations/event/**").permitAll()
               .requestMatchers("/api/admin/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN")
               .anyRequest().authenticated()
       )
